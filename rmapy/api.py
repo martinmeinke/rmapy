@@ -35,8 +35,11 @@ class Client(object):
         "usertoken": ""
     }
 
-    def __init__(self):
-        config = load()
+    token_file = None
+
+    def __init__(self, token_file=None):
+        self.token_file = token_file
+        config = load(self.token_file)
         if "devicetoken" in config:
             self.token_set["devicetoken"] = config["devicetoken"]
         if "usertoken" in config:
@@ -118,7 +121,7 @@ class Client(object):
         response = self.request("POST", DEVICE_TOKEN_URL, body=body)
         if response.ok:
             self.token_set["devicetoken"] = response.text
-            dump(self.token_set)
+            dump(self.token_set, self.token_file)
             return True
         else:
             raise AuthError("Can't register device")
@@ -141,11 +144,11 @@ class Client(object):
             raise AuthError("Please register a device first")
         token = self.token_set["devicetoken"]
         response = self.request("POST", USER_TOKEN_URL, None, headers={
-                "Authorization": f"Bearer {token}"
-            })
+            "Authorization": f"Bearer {token}"
+        })
         if response.ok:
             self.token_set["usertoken"] = response.text
-            dump(self.token_set)
+            dump(self.token_set, self.token_file)
             return True
         else:
             raise AuthError("Can't renew token: {e}".format(
@@ -274,7 +277,8 @@ class Client(object):
 
         blob_url_put = self._upload_request(zip_doc)
         zip_doc.dump(zip_doc.zipfile)
-        response = self.request("PUT", blob_url_put, data=zip_doc.zipfile.read())
+        response = self.request("PUT", blob_url_put,
+                                data=zip_doc.zipfile.read())
         # Reset seek
         zip_doc.zipfile.seek(0)
         if response.ok:
@@ -334,8 +338,8 @@ class Client(object):
                            body=[req])
         if not res.ok:
             raise ApiError(
-                     f"upload request failed with status {res.status_code}",
-                     response=res)
+                f"upload request failed with status {res.status_code}",
+                response=res)
         response = res.json()
         if len(response) > 0:
             dest = response[0].get("BlobURLPut", None)
@@ -366,8 +370,8 @@ class Client(object):
                            body=[req])
         if not res.ok:
             raise ApiError(
-                     f"upload request failed with status {res.status_code}",
-                     response=res)
+                f"upload request failed with status {res.status_code}",
+                response=res)
         response = res.json()
         if len(response) > 0:
             dest = response[0].get("BlobURLPut", None)

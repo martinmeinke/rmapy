@@ -5,10 +5,19 @@ from yaml import dump as yml_dump
 from typing import Dict
 
 
-def load() -> dict:
+def config_file_path(token_file: str) -> Path:
+    """Provide Path to config file"""
+
+    if token_file is None:
+        return Path.joinpath(Path.home(), ".rmapi")
+    else:
+        return Path(token_file)
+
+
+def load(token_file: str) -> dict:
     """Load the .rmapy config file"""
 
-    config_file_path = Path.joinpath(Path.home(), ".rmapi")
+    config_file_path = config_file_path(token_file)
     config: Dict[str, str] = {}
     if Path.exists(config_file_path):
         with open(config_file_path, 'r') as config_file:
@@ -17,7 +26,7 @@ def load() -> dict:
     return config
 
 
-def dump(config: dict) -> None:
+def dump(config: dict, token_file: str) -> None:
     """Dump config to the .rmapy config file
 
     Args:
@@ -25,9 +34,7 @@ def dump(config: dict) -> None:
             config file.
     """
 
-    config_file_path = Path.joinpath(Path.home(), ".rmapi")
+    token_file = config_file_path(token_file)
 
-    with open(config_file_path, 'w') as config_file:
+    with open(token_file, 'w') as config_file:
         config_file.write(yml_dump(config))
-
-
