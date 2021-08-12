@@ -17,10 +17,10 @@ def config_file_path(token_file: str) -> Path:
 def load(token_file: str) -> dict:
     """Load the .rmapy config file"""
 
-    config_file_path = config_file_path(token_file)
+    token_file = config_file_path(token_file)
     config: Dict[str, str] = {}
-    if Path.exists(config_file_path):
-        with open(config_file_path, 'r') as config_file:
+    if Path.exists(token_file):
+        with open(token_file, 'r') as config_file:
             config = dict(yml_load(config_file.read(), Loader=BaseLoader))
 
     return config
